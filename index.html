@@ -97,7 +97,40 @@ body {
 <!-- ===== MASMORRA ===== -->
 <div id="masmorra" class="screen">
     <h2>🕳️ Masmorra</h2>
-    <button onclick="dropItem()">Lutar</button>
+    <button onclick="resetCombat()">🔄 Nova Luta</button>
+
+    <div style="display:flex; justify-content:space-between;">
+
+        <!-- PLAYER -->
+        <div>
+            <h3>🧍 Você</h3>
+            <p>HP: <span id="p_hp">10</span></p>
+            <p>ATK: <span id="p_atk">1</span></p>
+            <p>DEF: <span id="p_def">1</span></p>
+            <p>ACC: <span id="p_acc">1</span></p>
+            <p>EVA: <span id="p_eva">1</span></p>
+        </div>
+
+        <!-- LOG -->
+        <div>
+            <h3>📜 Combate</h3>
+            <div id="log">Clique em atacar</div>
+            <div id="dice">🎲 - 🎲</div>
+        </div>
+
+        <!-- INIMIGO -->
+        <div>
+            <h3 id="enemy_name">👹 Inimigo</h3>
+            <p>HP: <span id="e_hp">10</span></p>
+            <p>ATK: <span id="e_atk">1</span></p>
+            <p>DEF: <span id="e_def">1</span></p>
+            <p>ACC: <span id="e_acc">1</span></p>
+            <p>EVA: <span id="e_eva">1</span></p>
+        </div>
+
+    </div>
+
+    <button onclick="turno()">⚔️ Atacar</button>
 </div>
 
 <!-- ===== OUTRAS TELAS ===== -->
@@ -288,7 +321,187 @@ window.onload = () => {
         unequip("weapon");
     };
 };
+/* =========================
+   COMBATE
+========================= */
 
+// player combate
+let combatPlayer = {
+    hp: 10,
+    atk: 1,
+    def: 1,
+    acc: 1,
+    eva: 1
+};
+
+// inimigo
+let enemy = {
+    name: "Inimigo",
+    hp: 10,
+    atk: 1,
+    def: 1,
+    acc: 1,
+    eva: 1
+};
+
+// dado
+function d6() {
+    return Math.floor(Math.random() * 6) + 1;
+}
+
+// UI
+function updateCombatUI() {
+    document.getElementById("p_hp").innerText = combatPlayer.hp;
+    document.getElementById("p_atk").innerText = combatPlayer.atk;
+    document.getElementById("p_def").innerText = combatPlayer.def;
+    document.getElementById("p_acc").innerText = combatPlayer.acc;
+    document.getElementById("p_eva").innerText = combatPlayer.eva;
+
+    document.getElementById("e_hp").innerText = enemy.hp;
+    document.getElementById("e_atk").innerText = enemy.atk;
+    document.getElementById("e_def").innerText = enemy.def;
+    document.getElementById("e_acc").innerText = enemy.acc;
+    document.getElementById("e_eva").innerText = enemy.eva;
+    document.getElementById("enemy_name").innerText = "👹 " + enemy.name;
+
+}
+
+// animação dado
+function animarDado() {
+    let dice = document.getElementById("dice");
+
+    let i = 0;
+    let interval = setInterval(() => {
+        dice.innerText = "🎲 " + d6() + " | 🎲 " + d6();
+        i++;
+        if (i > 10) clearInterval(interval);
+    }, 50);
+}
+
+// turno
+function turno() {
+
+    // trava se acabou
+    if (combatPlayer.hp <= 0 || enemy.hp <= 0) {
+        document.getElementById("log").innerText = "⚠️ Luta acabou! Clique em Nova Luta.";
+        return;
+    }
+
+    animarDado();
+
+    setTimeout(() => {
+
+        let log = "🧍 Você ataca!\n";
+
+        // PLAYER
+        let atk_d = d6();
+        let acc_d = d6();
+        let def_d = d6();
+        let eva_d = d6();
+
+        let playerAtkReal = combatPlayer.atk;
+        if (player.weapon) playerAtkReal += player.weapon.atk;
+
+        let atk_total = playerAtkReal + atk_d;
+        let acc_total = combatPlayer.acc + acc_d;
+
+        let def_total = enemy.def + def_d;
+        let eva_total = enemy.eva + eva_d;
+
+        log += `🎯 ACC ${acc_total} vs EVA ${eva_total}\n`;
+        log += `🎲 ATK ${atk_total} vs DEF ${def_total}\n`;
+
+        if (acc_total < eva_total) {
+            log += "❌ Errou!\n";
+        } else {
+            if (atk_total <= def_total) {
+                log += "🛡️ Bloqueado!\n";
+            } else {
+                let dmg = atk_total - def_total;
+                enemy.hp -= dmg;
+                log += `💢 Dano ${dmg}\n`;
+            }
+        }
+
+        // morreu?
+        if (enemy.hp <= 0) {
+            log += "🏆 Você venceu!\n";
+
+            if (Math.random() < 0.7) {
+                dropItem();
+                log += "🎁 Dropou item!";
+            } else {
+                log += "❌ Sem drop";
+            }
+
+            document.getElementById("log").innerText = log;
+            updateCombatUI();
+            return;
+        }
+
+        // INIMIGO
+        log += "\n👹 Inimigo ataca!\n";
+
+        atk_d = d6();
+        acc_d = d6();
+        def_d = d6();
+        eva_d = d6();
+
+        atk_total = enemy.atk + atk_d;
+        acc_total = enemy.acc + acc_d;
+
+        def_total = combatPlayer.def + def_d;
+        eva_total = combatPlayer.eva + eva_d;
+
+        log += `🎯 ACC ${acc_total} vs EVA ${eva_total}\n`;
+        log += `🎲 ATK ${atk_total} vs DEF ${def_total}\n`;
+
+        if (acc_total < eva_total) {
+            log += "❌ Inimigo errou!\n";
+        } else {
+            if (atk_total <= def_total) {
+                log += "🛡️ Você bloqueou!\n";
+            } else {
+                let dmg = atk_total - def_total;
+                combatPlayer.hp -= dmg;
+                log += `💢 Você tomou ${dmg}\n`;
+            }
+        }
+
+        if (combatPlayer.hp <= 0) {
+            log += "\n💀 Você morreu!";
+        }
+
+        document.getElementById("log").innerText = log;
+        updateCombatUI();
+
+    }, 600);
+}
+
+// reset luta
+function resetCombat() {
+
+    combatPlayer.hp = 10;
+
+    let nomes = ["Goblin", "Esqueleto", "Lobo", "Viking Sombrio"];
+
+    enemy = {
+        name: nomes[Math.floor(Math.random() * nomes.length)],
+        hp: 10,
+        atk: Math.floor(Math.random() * 3) + 1,
+        def: Math.floor(Math.random() * 3) + 1,
+        acc: Math.floor(Math.random() * 3) + 1,
+        eva: Math.floor(Math.random() * 3) + 1
+    };
+
+    document.getElementById("log").innerText = "Nova luta!";
+    updateCombatUI();
+}
+
+// iniciar
+updateCombatUI();
+
+    
 </script>
 
 </body>

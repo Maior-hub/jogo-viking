@@ -1,0 +1,203 @@
+/* ===== BASE ===== */
+body {
+    margin: 0;
+    background: #1e1e1e;
+    color: white;
+    font-family: monospace;
+    padding-bottom: 80px;
+}
+
+/* ===== TELAS ===== */
+.screen {
+    display: none;
+    padding: 20px;
+}
+
+.active {
+    display: block;
+}
+
+/* ===== BOTÕES ===== */
+button {
+    padding: 10px 15px;
+    margin: 5px;
+    background: #333;
+    color: white;
+    border: 1px solid #555;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+button:hover {
+    background: #555;
+}
+
+/* ===== MENU INFERIOR ===== */
+.menu {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #222;
+    display: flex;
+    border-top: 1px solid #444;
+    z-index: 999;
+}
+
+.menu button {
+    flex: 1;
+    padding: 15px;
+    background: #333;
+    color: white;
+    border: none;
+    font-size: 18px;
+}
+
+.menu button:hover {
+    background: #555;
+}
+
+/* ===== PERSONAGEM / EQUIPAMENTO ===== */
+.char {
+    display: grid;
+    grid-template-columns: 60px 100px 60px;
+    gap: 10px;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.slot {
+    width: 60px;
+    height: 60px;
+    background: #111;
+    border: 2px solid #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    border-radius: 8px;
+}
+
+.player {
+    font-size: 40px;
+    text-align: center;
+}
+
+/* ===== SLOT EQUIPADO ===== */
+.equipped {
+    border: 2px solid lime !important;
+    box-shadow: 0 0 10px lime;
+}
+
+/* ===== INVENTÁRIO ===== */
+#inventory {
+    margin-top: 20px;
+}
+
+#inventory div {
+    display: inline-block;
+    padding: 10px;
+    margin: 5px;
+    border: 1px solid white;
+    background: #111;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 24px;
+}
+
+#inventory div:hover {
+    background: #222;
+}
+
+/* ===== TOOLTIP ===== */
+.tooltip {
+    position: absolute;
+    background: black;
+    padding: 8px;
+    border: 1px solid white;
+    font-size: 12px;
+    pointer-events: none;
+    display: none;
+    border-radius: 6px;
+    z-index: 1000;
+}
+
+/* ===== COMBATE ===== */
+#player_box,
+#enemy_box {
+    min-width: 180px;
+    background: #151515;
+    padding: 15px;
+    border: 1px solid #444;
+    border-radius: 10px;
+}
+
+#log {
+    min-width: 250px;
+    min-height: 120px;
+    background: #111;
+    padding: 15px;
+    border: 1px solid #444;
+    border-radius: 10px;
+    white-space: pre-line;
+}
+
+#dice {
+    margin-top: 10px;
+    font-size: 20px;
+}
+
+/* ===== BARRA DE VIDA ===== */
+.hpbar {
+    width: 140px;
+    height: 12px;
+    background: #333;
+    border: 1px solid #555;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.hpfill {
+    height: 100%;
+    background: lime;
+    width: 100%;
+    transition: 0.3s;
+}
+
+.hpfill.enemy {
+    background: red;
+}
+
+/* ===== ANIMAÇÃO DE ATAQUE ===== */
+.attack {
+    animation: attackMove 0.2s;
+}
+
+@keyframes attackMove {
+    0% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(20px);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}
+
+.attack-enemy {
+    animation: attackEnemy 0.2s;
+}
+
+@keyframes attackEnemy {
+    0% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(-20px);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}

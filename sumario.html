@@ -1,0 +1,349 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+<meta charset="UTF-8">
+<title>Viking Game</title>
+
+<!-- =========================
+     INÍCIO DO CSS (ESTILO)
+========================= -->
+<style>
+
+/* ===== BASE (configuração geral da página) ===== */
+body {
+    margin: 0;
+    background: #1e1e1e;
+    color: white;
+    font-family: monospace;
+}
+
+/* ===== TELAS (controle de visibilidade das telas) ===== */
+.screen {
+    display: none;
+    padding: 20px;
+}
+
+.active {
+    display: block;
+}
+
+/* ===== MENU INFERIOR ===== */
+.menu {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: #222;
+    display: flex;
+}
+
+.menu button {
+    flex: 1;
+    padding: 15px;
+    background: #333;
+    color: white;
+    border: none;
+}
+
+.menu button:hover {
+    background: #555;
+}
+
+/* ===== EQUIPAMENTO DO PERSONAGEM ===== */
+.char {
+    display: grid;
+    grid-template-columns: 60px 100px 60px;
+    gap: 5px;
+}
+
+.slot {
+    width: 60px;
+    height: 60px;
+    background: #111;
+    border: 2px solid #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.player {
+    font-size: 40px;
+}
+
+/* SLOT EQUIPADO (destaca item equipado) */
+.equipped {
+    border: 2px solid lime !important;
+}
+
+/* TOOLTIP (caixinha de informação do item) */
+.tooltip {
+    position: absolute;
+    background: black;
+    padding: 5px;
+    border: 1px solid white;
+    font-size: 12px;
+    pointer-events: none;
+    display: none;
+}
+
+/* ===== BARRA DE VIDA ===== */
+.hpbar {
+    width: 120px;
+    height: 10px;
+    background: #333;
+    border: 1px solid #555;
+    margin-bottom: 5px;
+}
+
+.hpfill {
+    height: 100%;
+    background: lime;
+    width: 100%;
+    transition: 0.3s;
+}
+
+.hpfill.enemy {
+    background: red;
+}
+
+/* ===== ANIMAÇÕES DE ATAQUE ===== */
+.attack {
+    animation: attackMove 0.2s;
+}
+
+@keyframes attackMove {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(20px); }
+    100% { transform: translateX(0); }
+}
+
+.attack-enemy {
+    animation: attackEnemy 0.2s;
+}
+
+@keyframes attackEnemy {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(-20px); }
+    100% { transform: translateX(0); }
+}
+
+</style>
+<!-- =========================
+     FIM DO CSS
+========================= -->
+
+</head>
+
+<body>
+
+<!-- =========================
+     INÍCIO DO HTML (INTERFACE)
+========================= -->
+
+<!-- ===== MUNDO (menu principal) ===== -->
+<div id="mundo" class="screen active">
+    <h2>🌍 Mundo</h2>
+    <button onclick="openScreen('masmorra')">🕳️ Masmorra</button>
+    <button onclick="openScreen('ferreiro')">🔨 Ferreiro</button>
+    <button onclick="openScreen('fazenda')">🌾 Fazenda</button>
+    <button onclick="openScreen('arena')">⚔️ Arena</button>
+</div>
+
+<!-- ===== MASMORRA (combate) ===== -->
+<div id="masmorra" class="screen">
+    <h2>🕳️ Masmorra</h2>
+    <button onclick="resetCombat()">🔄 Nova Luta</button>
+
+    <!-- Área de combate -->
+    <div style="display:flex; justify-content:space-between;">
+
+        <!-- PLAYER -->
+        <div id="player_box">
+            <h3>🧍 Você</h3>
+            <!-- stats -->
+        </div>
+
+        <!-- LOG DE COMBATE -->
+        <div>
+            <h3>📜 Combate</h3>
+            <div id="log">Clique em atacar</div>
+            <div id="dice">🎲 - 🎲</div>
+        </div>
+
+        <!-- INIMIGO -->
+        <div id="enemy_box">
+            <h3 id="enemy_name">👹 Inimigo</h3>
+        </div>
+
+    </div>
+
+    <button onclick="turno()">⚔️ Atacar</button>
+</div>
+
+<!-- OUTRAS TELAS -->
+<div id="ferreiro" class="screen"><h2>🔨 Ferreiro</h2></div>
+<div id="fazenda" class="screen"><h2>🌾 Fazenda</h2></div>
+<div id="arena" class="screen"><h2>⚔️ Arena</h2></div>
+
+<!-- PERSONAGEM -->
+<div id="character" class="screen">
+    <h2>👤 Personagem</h2>
+</div>
+
+<!-- INVENTÁRIO -->
+<div id="inventario" class="screen">
+    <h2>🎒 Inventário</h2>
+    <div id="inventory"></div>
+</div>
+
+<!-- MENU FIXO -->
+<div class="menu">
+    <button onclick="openScreen('mundo')">🌍</button>
+    <button onclick="openScreen('character')">👤</button>
+    <button onclick="openScreen('inventario')">🎒</button>
+</div>
+
+<!-- TOOLTIP -->
+<div id="tooltip" class="tooltip"></div>
+
+<!-- =========================
+     FIM DO HTML
+========================= -->
+
+
+<!-- =========================
+     INÍCIO DO JAVASCRIPT (LÓGICA DO JOGO)
+========================= -->
+<script>
+
+/* ===== NAVEGAÇÃO ENTRE TELAS ===== */
+function openScreen(id) {
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+}
+
+/* ===== DADOS DO PLAYER ===== */
+let player = {
+    baseAtk: 1,
+    weapon: null
+};
+
+let items = [];
+
+/* ===== SISTEMA DE LOOT ===== */
+function randomRarity() {
+    let r = Math.random();
+    if (r < 0.5) return "Comum";
+    if (r < 0.75) return "Raro";
+    if (r < 0.9) return "Épico";
+    return "Lendário";
+}
+
+/* drop de item após vitória */
+function dropItem() {
+    let item = {
+        name: "Espada",
+        icon: "🗡️",
+        atk: Math.floor(Math.random() * 5) + 1,
+        raridade: randomRarity(),
+        slot: "weapon"
+    };
+
+    items.push(item);
+    renderInventory();
+}
+
+/* ===== INVENTÁRIO ===== */
+function renderInventory() {
+    let inv = document.getElementById("inventory");
+    inv.innerHTML = "";
+
+    items.forEach(item => {
+        let div = document.createElement("div");
+
+        div.innerText = item.icon;
+
+        // clique direito = equipar
+        div.oncontextmenu = (e) => {
+            e.preventDefault();
+            equip(item);
+        };
+
+        // tooltip
+        div.onmouseover = (e) => showTooltip(e, item);
+        div.onmousemove = moveTooltip;
+        div.onmouseout = hideTooltip;
+
+        inv.appendChild(div);
+    });
+}
+
+/* ===== EQUIPAR ITEM ===== */
+function equip(item) {
+    if (item.slot === "weapon") {
+        player.weapon = item;
+    }
+    updateStats();
+}
+
+/* ===== ATUALIZA STATUS ===== */
+function updateStats() {
+    let atk = player.baseAtk;
+
+    if (player.weapon) {
+        atk += player.weapon.atk;
+    }
+
+    document.getElementById("atk").innerText = atk;
+}
+
+/* ===== TOOLTIP ===== */
+function showTooltip(e, item) {
+    let tooltip = document.getElementById("tooltip");
+
+    tooltip.innerHTML = `
+        <b>${item.name}</b><br>
+        ATK: ${item.atk}<br>
+        Raridade: ${item.raridade}
+    `;
+
+    tooltip.style.display = "block";
+}
+
+function moveTooltip(e) {
+    let tooltip = document.getElementById("tooltip");
+    tooltip.style.left = e.pageX + 10 + "px";
+    tooltip.style.top = e.pageY + 10 + "px";
+}
+
+function hideTooltip() {
+    document.getElementById("tooltip").style.display = "none";
+}
+
+/* ===== COMBATE ===== */
+
+// rolar dado
+function d6() {
+    return Math.floor(Math.random() * 6) + 1;
+}
+
+/* turno de combate */
+function turno() {
+    // lógica de ataque player vs inimigo
+}
+
+/* resetar combate */
+function resetCombat() {
+    // cria novo inimigo e reseta HP
+}
+
+/* iniciar interface */
+updateCombatUI();
+
+</script>
+<!-- =========================
+     FIM DO JAVASCRIPT
+========================= -->
+
+</body>
+</html>

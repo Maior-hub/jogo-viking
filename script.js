@@ -323,35 +323,24 @@ function animarDado() {
 }
 
 /* =========================
-   TURNO DE COMBATE
+   TURNO DE COMBATE (CORRIGIDO)
 ========================= */
 function turno() {
-    let detailedLog = "";
     if (combatPlayer.hp <= 0 || enemy.hp <= 0) {
         document.getElementById("log").innerText =
             "⚠️ Luta acabou! Clique em Nova Luta.";
         return;
-        document.getElementById("detailed_log").innerText = detailedLog;
     }
 
     animarDado();
 
     setTimeout(() => {
-        let log = "🧍 Você ataca!\n";
-        let showDetailedLog = false;
+        let log = "";
+        let detailedLog = "";
 
-function toggleDetailedLog() {
-    showDetailedLog = !showDetailedLog;
-
-    let box = document.getElementById("detailed_log");
-
-    if (showDetailedLog) {
-        box.style.display = "block";
-    } else {
-        box.style.display = "none";
-    }
-}
-
+        /* =========================
+           PLAYER ATACA
+        ========================= */
         let pBox = document.getElementById("player_box");
         pBox.classList.add("attack");
 
@@ -359,56 +348,79 @@ function toggleDetailedLog() {
             pBox.classList.remove("attack");
         }, 200);
 
-        /* PLAYER ATACA */
+        log += "🧍 Você ataca ferozmente!\n";
+
         let atk_total =
-            combatPlayer.atk +
-            (player.weapon ? player.weapon.atk : 0) +
-            d6();
+            combatPlayer.atk + d6();
 
-        let acc_total = combatPlayer.acc + d6();
-        let def_total = enemy.def + d6();
-        let eva_total = enemy.eva + d6();
+        let acc_total =
+            combatPlayer.acc + d6();
 
-        log += `🎯 ACC ${acc_total} vs EVA ${eva_total}\n`;
-        log += `🎲 ATK ${atk_total} vs DEF ${def_total}\n`;
+        let def_total =
+            enemy.def + d6();
+
+        let eva_total =
+            enemy.eva + d6();
+
+        detailedLog +=
+`=== ATAQUE DO JOGADOR ===
+ACC: ${acc_total}
+EVA inimiga: ${eva_total}
+
+ATK total: ${atk_total}
+DEF inimiga: ${def_total}
+
+`;
 
         if (acc_total < eva_total) {
-            log += "❌ Errou!\n";
+            log += "❌ Seu golpe falhou!\n";
+            detailedLog += "Resultado: ERROU\n\n";
         } else {
             if (atk_total <= def_total) {
-                log += "🛡️ Bloqueado!\n";
+                log += "🛡️ O inimigo bloqueou seu ataque!\n";
+                detailedLog += "Resultado: BLOQUEADO\n\n";
             } else {
                 let dmg = atk_total - def_total;
+
                 enemy.hp -= dmg;
-                if (enemy.hp < 0) enemy.hp = 0;
 
-                log += `Você golpeia com força e causa ${dmg} de dano!\n`;
+                if (enemy.hp < 0) {
+                    enemy.hp = 0;
+                }
 
-detailedLog += `
-Dado de ataque: ${atk_total}
-Defesa inimiga: ${def_total}
+                log += `💢 Você causou ${dmg} de dano!\n`;
+
+                detailedLog +=
+`Resultado: ACERTOU
 Dano final: ${dmg}
+
 `;
             }
         }
 
-        /* INIMIGO MORREU */
+        /* =========================
+           INIMIGO MORREU
+        ========================= */
         if (enemy.hp <= 0) {
             log += "\n🏆 Você venceu!\n";
 
             if (Math.random() < 0.7) {
                 dropItem();
-                log += "🎁 Dropou item!";
+                log += "🎁 Um item caiu!";
             } else {
-                log += "❌ Sem drop";
+                log += "❌ Nenhum item dropou.";
             }
 
             document.getElementById("log").innerText = log;
+            document.getElementById("detailed_log").innerText = detailedLog;
+
             updateCombatUI();
             return;
         }
 
-        /* INIMIGO ATACA */
+        /* =========================
+           INIMIGO ATACA
+        ========================= */
         let eBox = document.getElementById("enemy_box");
         eBox.classList.add("attack-enemy");
 
@@ -416,30 +428,52 @@ Dano final: ${dmg}
             eBox.classList.remove("attack-enemy");
         }, 200);
 
-        log += "\n👹 Inimigo ataca!\n";
+        log += "\n👹 O inimigo contra-ataca!\n";
 
-        atk_total = enemy.atk + d6();
-        acc_total = enemy.acc + d6();
-        def_total = combatPlayer.def + d6();
-        eva_total = combatPlayer.eva + d6();
+        atk_total =
+            enemy.atk + d6();
 
-        log += `🎯 ACC ${acc_total} vs EVA ${eva_total}\n`;
-        log += `🎲 ATK ${atk_total} vs DEF ${def_total}\n`;
+        acc_total =
+            enemy.acc + d6();
+
+        def_total =
+            combatPlayer.def + d6();
+
+        eva_total =
+            combatPlayer.eva + d6();
+
+        detailedLog +=
+`=== ATAQUE DO INIMIGO ===
+ACC: ${acc_total}
+Sua EVA: ${eva_total}
+
+ATK total: ${atk_total}
+Sua DEF: ${def_total}
+
+`;
 
         if (acc_total < eva_total) {
-            log += "❌ Inimigo errou!\n";
+            log += "❌ O inimigo errou!\n";
+            detailedLog += "Resultado: INIMIGO ERROU\n";
         } else {
             if (atk_total <= def_total) {
-                log += "🛡️ Você bloqueou!\n";
+                log += "🛡️ Você bloqueou o golpe!\n";
+                detailedLog += "Resultado: VOCÊ BLOQUEOU\n";
             } else {
                 let dmg = atk_total - def_total;
+
                 combatPlayer.hp -= dmg;
 
                 if (combatPlayer.hp < 0) {
                     combatPlayer.hp = 0;
                 }
 
-                log += `💢 Você tomou ${dmg}\n`;
+                log += `💥 Você recebeu ${dmg} de dano!\n`;
+
+                detailedLog +=
+`Resultado: VOCÊ TOMOU DANO
+Dano final: ${dmg}
+`;
             }
         }
 
@@ -448,6 +482,8 @@ Dano final: ${dmg}
         }
 
         document.getElementById("log").innerText = log;
+        document.getElementById("detailed_log").innerText = detailedLog;
+
         updateCombatUI();
 
     }, 600);
@@ -586,4 +622,19 @@ function craftIncomum() {
 
     log.innerText =
         "✨ Você forjou uma Espada Incomum!";
+}
+
+/* =========================
+   LOG DETALHDO 
+========================= */
+let showDetailedLog = false;
+
+function toggleDetailedLog() {
+    let box = document.getElementById("detailed_log");
+
+    if (box.style.display === "none" || box.style.display === "") {
+        box.style.display = "block";
+    } else {
+        box.style.display = "none";
+    }
 }

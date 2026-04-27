@@ -20,18 +20,18 @@
     <button onclick="openScreen('arena')">⚔️ Arena</button>
 </div>
 
+
 <!-- ===== MASMORRA ===== -->
 <div id="masmorra" class="screen">
     <h2>🕳️ Masmorra</h2>
 
     <button onclick="resetCombat()">🔄 Nova Luta</button>
 
-    <div style="display:flex; justify-content:space-between; gap:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px;">
 
         <!-- PLAYER -->
         <div id="player_box">
             <h3>🧍 Você</h3>
-
             <div>HP: <span id="p_hp">10</span></div>
             <div class="hpbar">
                 <div id="p_hpbar" class="hpfill"></div>
@@ -43,14 +43,55 @@
             <p>EVA: <span id="p_eva">1</span></p>
         </div>
 
-        <!-- LOG -->
-        <div>
-            <h3>📜 Combate</h3>
-            <div id="log">Clique em atacar</div>
-            <div id="dice">🎲 - 🎲</div>
+        <!-- CENTRO -->
+        <div style="width:420px;">
+
+            <!-- COMBATE PRINCIPAL -->
+            <div>
+                <h3>📜 Combate</h3>
+
+                <div id="log" style="
+                    min-height:100px;
+                    background:#111;
+                    border:1px solid #444;
+                    padding:15px;
+                    border-radius:10px;
+                    white-space: pre-line;
+                ">
+                    Clique em atacar
+                </div>
+
+                <div id="dice" style="margin-top:10px;">
+                    🎲 - 🎲
+                </div>
+            </div>
+
+            <!-- BOTÕES -->
+            <div style="margin-top:15px;">
+                <button onclick="turno()">⚔️ Atacar</button>
+
+                <button onclick="toggleDetailedLog()">
+                    📜 Log detalhado
+                </button>
+            </div>
+
+            <!-- LOG DETALHADO -->
+            <div id="detailed_log" style="
+                display:none;
+                margin-top:15px;
+                min-height:150px;
+                background:#111;
+                border:1px solid #555;
+                padding:15px;
+                border-radius:10px;
+                white-space: pre-line;
+            ">
+                Log detalhado aparecerá aqui
+            </div>
+
         </div>
 
-        <!-- ENEMY -->
+        <!-- INIMIGO -->
         <div id="enemy_box">
             <h3 id="enemy_name">👹 Inimigo</h3>
 
@@ -66,25 +107,7 @@
         </div>
 
     </div>
-
-    <button onclick="turno()">⚔️ Atacar</button>
-    <button onclick="toggleDetailedLog()">
-    📜 Log Detalhado
-</button>
-
-<div id="detailed_log" style="
-    margin-top: 15px;
-    padding: 15px;
-    background: #111;
-    border: 1px solid #555;
-    border-radius: 10px;
-    display: none;
-    white-space: pre-line;
-">
-    Log detalhado aparecerá aqui
 </div>
-</div>
-
 <!-- ===== OUTRAS TELAS ===== -->
 <div id="ferreiro" class="screen">
     <h2>🔨 Ferreiro</h2>

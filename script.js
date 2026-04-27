@@ -326,16 +326,31 @@ function animarDado() {
    TURNO DE COMBATE
 ========================= */
 function turno() {
+    let detailedLog = "";
     if (combatPlayer.hp <= 0 || enemy.hp <= 0) {
         document.getElementById("log").innerText =
             "⚠️ Luta acabou! Clique em Nova Luta.";
         return;
+        document.getElementById("detailed_log").innerText = detailedLog;
     }
 
     animarDado();
 
     setTimeout(() => {
         let log = "🧍 Você ataca!\n";
+        let showDetailedLog = false;
+
+function toggleDetailedLog() {
+    showDetailedLog = !showDetailedLog;
+
+    let box = document.getElementById("detailed_log");
+
+    if (showDetailedLog) {
+        box.style.display = "block";
+    } else {
+        box.style.display = "none";
+    }
+}
 
         let pBox = document.getElementById("player_box");
         pBox.classList.add("attack");
@@ -367,7 +382,13 @@ function turno() {
                 enemy.hp -= dmg;
                 if (enemy.hp < 0) enemy.hp = 0;
 
-                log += `💢 Dano ${dmg}\n`;
+                log += `Você golpeia com força e causa ${dmg} de dano!\n`;
+
+detailedLog += `
+Dado de ataque: ${atk_total}
+Defesa inimiga: ${def_total}
+Dano final: ${dmg}
+`;
             }
         }
 
